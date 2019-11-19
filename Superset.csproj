@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.0</TargetFramework>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <VersionPrefix>1.0.0</VersionPrefix>
+        <VersionSuffix>alpha</VersionSuffix>
+        <PackageProjectUrl>https://github.com/ajruckman/Superset/</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/ajruckman/Superset/</RepositoryUrl>
+    </PropertyGroup>
+    
+</Project>
