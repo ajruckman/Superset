@@ -2,6 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
+#nullable enable
+
+// ReSharper disable MemberCanBePrivate.Global
+
 namespace Superset.Logging
 {
     public static class Log
@@ -36,7 +40,7 @@ namespace Superset.Logging
 
                 value = string.Join(", ", res);
             }
-            
+
             Logger.Debug($"{path} -> {value}");
         }
     }
