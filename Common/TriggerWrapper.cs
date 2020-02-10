@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9,42 +10,65 @@ namespace Superset.Common
 {
     public class TriggerWrapper : ComponentBase
     {
+        private readonly object _keyLock = new object();
+        private          bool   _canRender;
+        private          string _key;
+
         [Parameter] public RenderFragment  ChildContent { get; set; }
         [Parameter] public UpdateTrigger   Trigger      { get; set; }
         [Parameter] public UpdateTrigger[] Triggers     { get; set; }
         [Parameter] public bool            Protected    { get; set; }
 
-        private bool _canRender;
+        private void NewKey()
+        {
+            lock (_keyLock)
+            {
+                _key = DateTime.Now.Ticks.ToString();
+            }
+        }
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            builder.AddContent(0, ChildContent);
+            builder.OpenElement(0, "section");
+            builder.AddAttribute(1, "key",   _key);
+            builder.AddAttribute(2, "style", "display: contents;");
+            builder.AddContent(2, ChildContent);
         }
 
         protected override void OnInitialized()
         {
+            NewKey();
+
             if (Trigger != null)
-                Trigger.OnUpdate += () =>
+            {
+                Trigger.OnUpdate += Refresh;
+                Trigger.OnReDiff += () =>
                 {
-                    _canRender = true;
-                    InvokeAsync(StateHasChanged);
-                    _canRender = false;
+                    NewKey();
+                    Refresh();
                 };
+            }
 
             if (Triggers == null) return;
 
             foreach (UpdateTrigger trigger in Triggers)
-                trigger.OnUpdate += () =>
+            {
+                trigger.OnUpdate += Refresh;
+                trigger.OnReDiff += () =>
                 {
-                    _canRender = true;
-                    InvokeAsync(StateHasChanged);
-                    _canRender = false;
+                    NewKey();
+                    Refresh();
                 };
+            }
         }
 
-        protected override bool ShouldRender()
+        private void Refresh()
         {
-            return !Protected || _canRender;
+            _canRender = true;
+            InvokeAsync(StateHasChanged);
+            _canRender = false;
         }
+
+        protected override bool ShouldRender() => !Protected || _canRender;
     }
 }
