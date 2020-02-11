@@ -32,7 +32,8 @@ namespace Superset.Common
             builder.OpenElement(0, "section");
             builder.AddAttribute(1, "key",   _key);
             builder.AddAttribute(2, "style", "display: contents;");
-            builder.AddContent(2, ChildContent);
+            builder.AddContent(3, ChildContent);
+            builder.CloseElement();
         }
 
         protected override void OnInitialized()
