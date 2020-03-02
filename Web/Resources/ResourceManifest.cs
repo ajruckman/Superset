@@ -10,31 +10,38 @@ namespace Superset.Web.Resources
 
         public ResourceManifest(
             string              assembly,
-            IEnumerable<string> scripts,
-            IEnumerable<string> stylesheets,
-            IEnumerable<string> scriptsExternal,
-            IEnumerable<string> stylesheetsExternal
+            IEnumerable<string> scripts             = null,
+            IEnumerable<string> stylesheets         = null,
+            IEnumerable<string> scriptsExternal     = null,
+            IEnumerable<string> stylesheetsExternal = null
         )
         {
+            Assembly = assembly;
             string rootPath = $"/_content/{assembly}/";
 
             _stylesheets = new List<string>();
             _scripts     = new List<string>();
 
-            foreach (string script in scripts)
-                _scripts.Add(rootPath + script);
+            if (scripts != null)
+                foreach (string script in scripts)
+                    _scripts.Add(rootPath + script);
 
-            foreach (string stylesheet in stylesheets)
-                _stylesheets.Add(rootPath + stylesheet);
+            if (stylesheets != null)
+                foreach (string stylesheet in stylesheets)
+                    _stylesheets.Add(rootPath + stylesheet);
 
-            foreach (string script in scriptsExternal)
-                _scripts.Add(script);
+            if (scriptsExternal != null)
+                foreach (string script in scriptsExternal)
+                    _scripts.Add(script);
 
-            foreach (string stylesheet in stylesheetsExternal)
-                _stylesheets.Add(stylesheet);
+            if (stylesheetsExternal != null)
+                foreach (string stylesheet in stylesheetsExternal)
+                    _stylesheets.Add(stylesheet);
 
             _stylesheets.Add("css/local.css");
         }
+
+        public string Assembly { get; }
 
         public string Stylesheets()
         {
