@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
+using Superset.Web.Resources;
 
 namespace Superset.Web.Utilities
 {
@@ -15,5 +16,8 @@ namespace Superset.Web.Utilities
                 Convert.ToBase64String(data)
             );
         }
+
+        public static ResourceManifest SaveAsFileManifest =
+            new ResourceManifest(nameof(Superset), scripts: new[] {"js/SaveAsFile.js"});
     }
 }

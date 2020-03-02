@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.AspNetCore.Html;
 
 namespace Superset.Web.Resources
 {
@@ -61,6 +62,19 @@ namespace Superset.Web.Resources
                 builder.AppendLine($"<script src='{script}'></script>");
 
             return builder.ToString();
+        }
+
+        public static IHtmlContent Render(List<ResourceManifest> manifests)
+        {
+            StringBuilder result = new StringBuilder();
+            foreach (ResourceManifest manifest in manifests)
+            {
+                result.AppendLine($"<!-- Assembly: {manifest.Assembly} -->");
+                result.AppendLine(manifest.Stylesheets());
+                result.AppendLine(manifest.Scripts());
+            }
+
+            return new HtmlString(result.ToString());
         }
     }
 }
