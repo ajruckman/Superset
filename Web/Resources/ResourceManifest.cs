@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Components;
 
 // ReSharper disable MemberCanBeInternal
 // ReSharper disable MemberCanBePrivate.Global
@@ -16,11 +16,11 @@ namespace Superset.Web.Resources
         private readonly List<string> _stylesheets;
 
         public ResourceManifest(
-            string              assembly,
-            IEnumerable<string> scripts             = null,
-            IEnumerable<string> stylesheets         = null,
-            IEnumerable<string> scriptsExternal     = null,
-            IEnumerable<string> stylesheetsExternal = null
+            string               assembly,
+            IEnumerable<string>? scripts             = null,
+            IEnumerable<string>? stylesheets         = null,
+            IEnumerable<string>? scriptsExternal     = null,
+            IEnumerable<string>? stylesheetsExternal = null
         )
         {
             Assembly = assembly;
@@ -80,7 +80,7 @@ namespace Superset.Web.Resources
             return str;
         }
 
-        public static IHtmlContent Render(
+        public static MarkupString Render(
             ResourceManifest            manifest,
             Dictionary<string, string>? variables = null
         )
@@ -89,10 +89,10 @@ namespace Superset.Web.Resources
             result.AppendLine(manifest.Stylesheets(variables));
             result.AppendLine(manifest.Scripts(variables));
 
-            return new HtmlString(result.ToString());
+            return new MarkupString(result.ToString());
         }
 
-        public static IHtmlContent RenderSet
+        public static MarkupString RenderSet
         (
             IEnumerable<ResourceManifest> manifests,
             Dictionary<string, string>?   variables = null
@@ -106,7 +106,7 @@ namespace Superset.Web.Resources
                 result.AppendLine(manifest.Scripts(variables));
             }
 
-            return new HtmlString(result.ToString());
+            return new MarkupString(result.ToString());
         }
     }
 }
