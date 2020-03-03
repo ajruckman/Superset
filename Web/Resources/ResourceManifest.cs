@@ -1,6 +1,12 @@
+#nullable enable
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Html;
+
+// ReSharper disable MemberCanBeInternal
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedMember.Global
 
 namespace Superset.Web.Resources
 {
@@ -44,34 +50,60 @@ namespace Superset.Web.Resources
 
         public string Assembly { get; }
 
-        public string Stylesheets()
+        public string Stylesheets(Dictionary<string, string>? variables = null)
         {
             StringBuilder builder = new StringBuilder();
 
             foreach (string stylesheet in _stylesheets)
-                builder.AppendLine($"<link href='{stylesheet}' rel='stylesheet' />");
+                builder.AppendLine($"<link rel='stylesheet' type='text/css' href='{Expand(stylesheet, variables)}' />");
 
             return builder.ToString();
         }
 
-        public string Scripts()
+        public string Scripts(Dictionary<string, string>? variables = null)
         {
             StringBuilder builder = new StringBuilder();
 
             foreach (string script in _scripts)
-                builder.AppendLine($"<script src='{script}'></script>");
+                builder.AppendLine($"<script src='{Expand(script, variables)}'></script>");
 
             return builder.ToString();
         }
 
-        public static IHtmlContent Render(List<ResourceManifest> manifests)
+        // https://stackoverflow.com/a/7957728/9911189
+        private string Expand(string str, Dictionary<string, string>? variables)
+        {
+            if (variables != null)
+                str = variables.Aggregate(str, (current, value) =>
+                    current.Replace("{{" + value.Key + "}}", value.Value));
+
+            return str;
+        }
+
+        public static IHtmlContent Render(
+            ResourceManifest            manifest,
+            Dictionary<string, string>? variables = null
+        )
+        {
+            StringBuilder result = new StringBuilder();
+            result.AppendLine(manifest.Stylesheets(variables));
+            result.AppendLine(manifest.Scripts(variables));
+
+            return new HtmlString(result.ToString());
+        }
+
+        public static IHtmlContent RenderSet
+        (
+            IEnumerable<ResourceManifest> manifests,
+            Dictionary<string, string>?   variables = null
+        )
         {
             StringBuilder result = new StringBuilder();
             foreach (ResourceManifest manifest in manifests)
             {
                 result.AppendLine($"<!-- Assembly: {manifest.Assembly} -->");
-                result.AppendLine(manifest.Stylesheets());
-                result.AppendLine(manifest.Scripts());
+                result.AppendLine(manifest.Stylesheets(variables));
+                result.AppendLine(manifest.Scripts(variables));
             }
 
             return new HtmlString(result.ToString());

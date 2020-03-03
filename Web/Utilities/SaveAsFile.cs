@@ -11,7 +11,7 @@ namespace Superset.Web.Utilities
         public static async Task SaveAsFile(IJSRuntime js, string filename, byte[] data)
         {
             await js.InvokeAsync<object>(
-                "saveAsFile",
+                "Superset_SaveAsFile",
                 filename,
                 Convert.ToBase64String(data)
             );
