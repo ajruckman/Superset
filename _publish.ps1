@@ -8,7 +8,7 @@ function Clean-DotNETProject
 
 Clean-DotNETProject
 
-dotnet pack -c Debug
+dotnet pack --include-source -c Debug
 
 if (!(Test-Path .\_published\))
 {

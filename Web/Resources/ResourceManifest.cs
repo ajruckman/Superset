@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Components;
@@ -55,7 +56,7 @@ namespace Superset.Web.Resources
             void Fragment(RenderTreeBuilder b)
             {
                 var i = 0;
-                foreach (string stylesheet in _stylesheets)
+                foreach (string stylesheet in _stylesheets ?? new List<string>())
                     b.AddContent(i++, Stylesheet(Expand(stylesheet, variables)));
             }
 
@@ -67,7 +68,7 @@ namespace Superset.Web.Resources
             void Fragment(RenderTreeBuilder b)
             {
                 var i = 0;
-                foreach (string script in _scripts)
+                foreach (string script in _scripts ?? new List<string>())
                     b.AddContent(i++, Script(Expand(script, variables)));
             }
 
@@ -91,9 +92,9 @@ namespace Superset.Web.Resources
         {
             void Fragment(RenderTreeBuilder b)
             {
-                b.OpenElement(0, "script");
-                b.AddAttribute(1, "src", src);
-                b.CloseElement();
+                // b.OpenElement(0, "script");
+                // b.AddAttribute(1, "src", src);
+                // b.CloseElement();
             }
 
             return Fragment;
@@ -104,8 +105,9 @@ namespace Superset.Web.Resources
             void Fragment(RenderTreeBuilder b)
             {
                 b.OpenElement(0, "link");
-                b.AddAttribute(1, "type", "text/css");
-                b.AddAttribute(2, "href", href);
+                b.AddAttribute(1, "rel", "stylesheet");
+                b.AddAttribute(2, "type", "text/css");
+                b.AddAttribute(3, "href", href);
                 b.CloseElement();
             }
 
@@ -120,10 +122,14 @@ namespace Superset.Web.Resources
             Dictionary<string, string>?   variables
         )
         {
+            Console.WriteLine(100);
+            
             void Fragment(RenderTreeBuilder builder)
             {
                 var i = 0;
-                foreach (ResourceManifest manifest in manifests)
+                Console.WriteLine("---");
+                Console.WriteLine(manifests.Count());
+                foreach (ResourceManifest manifest in manifests ?? new List<ResourceManifest>())
                 {
                     builder.AddMarkupContent(i++, $"<!-- Assembly: {manifest.Assembly} -->");
                     if (stylesheets)
