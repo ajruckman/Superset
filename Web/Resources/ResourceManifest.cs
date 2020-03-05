@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 
 // ReSharper disable MemberCanBeInternal
 // ReSharper disable MemberCanBePrivate.Global
@@ -10,7 +11,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Superset.Web.Resources
 {
-    public sealed class ResourceManifest
+    public sealed partial class ResourceManifest
     {
         private readonly List<string> _scripts;
         private readonly List<string> _stylesheets;
@@ -79,20 +80,24 @@ namespace Superset.Web.Resources
 
             return str;
         }
+    }
 
+    public sealed partial class ResourceManifest
+    {
         public static MarkupString Render(
             ResourceManifest            manifest,
             Dictionary<string, string>? variables = null
         )
         {
             StringBuilder result = new StringBuilder();
+            result.AppendLine($"<!-- Assembly: {manifest.Assembly} -->");
             result.AppendLine(manifest.Stylesheets(variables));
             result.AppendLine(manifest.Scripts(variables));
-
+            
             return new MarkupString(result.ToString());
         }
 
-        public static MarkupString RenderSet
+        public static MarkupString Render
         (
             IEnumerable<ResourceManifest> manifests,
             Dictionary<string, string>?   variables = null
@@ -104,6 +109,62 @@ namespace Superset.Web.Resources
                 result.AppendLine($"<!-- Assembly: {manifest.Assembly} -->");
                 result.AppendLine(manifest.Stylesheets(variables));
                 result.AppendLine(manifest.Scripts(variables));
+            }
+
+            return new MarkupString(result.ToString());
+        }
+
+        public static MarkupString RenderScripts(
+            ResourceManifest            manifest,
+            Dictionary<string, string>? variables = null
+        )
+        {
+            StringBuilder result = new StringBuilder();
+            result.AppendLine($"<!-- Assembly: {manifest.Assembly} -->");
+            result.AppendLine(manifest.Scripts(variables));
+
+            return new MarkupString(result.ToString());
+        }
+
+        public static MarkupString RenderScripts
+        (
+            IEnumerable<ResourceManifest> manifests,
+            Dictionary<string, string>?   variables = null
+        )
+        {
+            StringBuilder result = new StringBuilder();
+            foreach (ResourceManifest manifest in manifests)
+            {
+                result.AppendLine($"<!-- Assembly: {manifest.Assembly} -->");
+                result.AppendLine(manifest.Scripts(variables));
+            }
+
+            return new MarkupString(result.ToString());
+        }
+
+        public static MarkupString RenderStylesheets(
+            ResourceManifest            manifest,
+            Dictionary<string, string>? variables = null
+        )
+        {
+            StringBuilder result = new StringBuilder();
+            result.AppendLine($"<!-- Assembly: {manifest.Assembly} -->");
+            result.AppendLine(manifest.Stylesheets(variables));
+
+            return new MarkupString(result.ToString());
+        }
+
+        public static MarkupString RenderStylesheets
+        (
+            IEnumerable<ResourceManifest> manifests,
+            Dictionary<string, string>?   variables = null
+        )
+        {
+            StringBuilder result = new StringBuilder();
+            foreach (ResourceManifest manifest in manifests)
+            {
+                result.AppendLine($"<!-- Assembly: {manifest.Assembly} -->");
+                result.AppendLine(manifest.Stylesheets(variables));
             }
 
             return new MarkupString(result.ToString());
