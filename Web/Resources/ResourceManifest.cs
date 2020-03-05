@@ -45,8 +45,6 @@ namespace Superset.Web.Resources
             if (stylesheetsExternal != null)
                 foreach (string stylesheet in stylesheetsExternal)
                     _stylesheets.Add(stylesheet);
-
-            _stylesheets.Add("css/local.css");
         }
 
         public string Assembly { get; }
@@ -57,7 +55,7 @@ namespace Superset.Web.Resources
             {
                 var i = 0;
                 foreach (string stylesheet in _stylesheets ?? new List<string>())
-                    b.AddContent(i++, Stylesheet(Expand(stylesheet, variables)));
+                    b.AddContent(++i, Stylesheet(Expand(stylesheet, variables)));
             }
 
             return Fragment;
@@ -69,7 +67,7 @@ namespace Superset.Web.Resources
             {
                 var i = 0;
                 foreach (string script in _scripts ?? new List<string>())
-                    b.AddContent(i++, Script(Expand(script, variables)));
+                    b.AddContent(++i, Script(Expand(script, variables)));
             }
 
             return Fragment;
@@ -80,7 +78,7 @@ namespace Superset.Web.Resources
         {
             if (variables != null)
                 str = variables.Aggregate(str, (current, value) =>
-                                              current.Replace("{{" + value.Key + "}}", value.Value));
+                    current.Replace("{{" + value.Key + "}}", value.Value));
 
             return str;
         }
@@ -92,9 +90,9 @@ namespace Superset.Web.Resources
         {
             void Fragment(RenderTreeBuilder b)
             {
-                // b.OpenElement(0, "script");
-                // b.AddAttribute(1, "src", src);
-                // b.CloseElement();
+                b.OpenElement(0, "script");
+                b.AddAttribute(1, "src", src);
+                b.CloseElement();
             }
 
             return Fragment;
@@ -105,7 +103,7 @@ namespace Superset.Web.Resources
             void Fragment(RenderTreeBuilder b)
             {
                 b.OpenElement(0, "link");
-                b.AddAttribute(1, "rel", "stylesheet");
+                b.AddAttribute(1, "rel",  "stylesheet");
                 b.AddAttribute(2, "type", "text/css");
                 b.AddAttribute(3, "href", href);
                 b.CloseElement();
@@ -122,20 +120,15 @@ namespace Superset.Web.Resources
             Dictionary<string, string>?   variables
         )
         {
-            Console.WriteLine(100);
-            
             void Fragment(RenderTreeBuilder builder)
             {
                 var i = 0;
-                Console.WriteLine("---");
-                Console.WriteLine(manifests.Count());
                 foreach (ResourceManifest manifest in manifests ?? new List<ResourceManifest>())
                 {
-                    builder.AddMarkupContent(i++, $"<!-- Assembly: {manifest.Assembly} -->");
                     if (stylesheets)
-                        builder.AddContent(i++, manifest.Stylesheets(variables));
+                        builder.AddContent(++i, manifest.Stylesheets(variables));
                     if (scripts)
-                        builder.AddContent(i++, manifest.Scripts(variables));
+                        builder.AddContent(++i, manifest.Scripts(variables));
                 }
             }
 

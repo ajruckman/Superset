@@ -16,8 +16,5 @@ namespace Superset.Web.Utilities
                 Convert.ToBase64String(data)
             );
         }
-
-        public static ResourceManifest SaveAsFileManifest =
-            new ResourceManifest(nameof(Superset), scripts: new[] {"js/SaveAsFile.js"});
     }
 }
