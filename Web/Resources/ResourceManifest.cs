@@ -1,7 +1,6 @@
 #nullable enable
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -51,24 +50,28 @@ namespace Superset.Web.Resources
 
         public string Assembly { get; }
 
-        public string Stylesheets(Dictionary<string, string>? variables = null)
+        public RenderFragment Stylesheets(Dictionary<string, string>? variables = null)
         {
-            StringBuilder builder = new StringBuilder();
+            void Fragment(RenderTreeBuilder b)
+            {
+                var i = 0;
+                foreach (string stylesheet in _stylesheets)
+                    b.AddContent(i++, Stylesheet(Expand(stylesheet, variables)));
+            }
 
-            foreach (string stylesheet in _stylesheets)
-                builder.AppendLine($"<link rel='stylesheet' type='text/css' href='{Expand(stylesheet, variables)}' />");
-
-            return builder.ToString();
+            return Fragment;
         }
 
-        public string Scripts(Dictionary<string, string>? variables = null)
+        public RenderFragment Scripts(Dictionary<string, string>? variables = null)
         {
-            StringBuilder builder = new StringBuilder();
+            void Fragment(RenderTreeBuilder b)
+            {
+                var i = 0;
+                foreach (string script in _scripts)
+                    b.AddContent(i++, Script(Expand(script, variables)));
+            }
 
-            foreach (string script in _scripts)
-                builder.AppendLine($"<script src='{Expand(script, variables)}'></script>");
-
-            return builder.ToString();
+            return Fragment;
         }
 
         // https://stackoverflow.com/a/7957728/9911189
@@ -76,7 +79,7 @@ namespace Superset.Web.Resources
         {
             if (variables != null)
                 str = variables.Aggregate(str, (current, value) =>
-                    current.Replace("{{" + value.Key + "}}", value.Value));
+                                              current.Replace("{{" + value.Key + "}}", value.Value));
 
             return str;
         }
@@ -84,90 +87,110 @@ namespace Superset.Web.Resources
 
     public sealed partial class ResourceManifest
     {
-        public static MarkupString Render(
-            ResourceManifest            manifest,
-            Dictionary<string, string>? variables = null
-        )
+        private static RenderFragment Script(string src)
         {
-            StringBuilder result = new StringBuilder();
-            result.AppendLine($"<!-- Assembly: {manifest.Assembly} -->");
-            result.AppendLine(manifest.Stylesheets(variables));
-            result.AppendLine(manifest.Scripts(variables));
-            
-            return new MarkupString(result.ToString());
+            void Fragment(RenderTreeBuilder b)
+            {
+                b.OpenElement(0, "script");
+                b.AddAttribute(1, "src", src);
+                b.CloseElement();
+            }
+
+            return Fragment;
         }
 
-        public static MarkupString Render
+        private static RenderFragment Stylesheet(string href)
+        {
+            void Fragment(RenderTreeBuilder b)
+            {
+                b.OpenElement(0, "link");
+                b.AddAttribute(1, "type", "text/css");
+                b.AddAttribute(2, "href", href);
+                b.CloseElement();
+            }
+
+            return Fragment;
+        }
+
+        public static RenderFragment Render
+        (
+            IEnumerable<ResourceManifest> manifests,
+            bool                          stylesheets,
+            bool                          scripts,
+            Dictionary<string, string>?   variables
+        )
+        {
+            void Fragment(RenderTreeBuilder builder)
+            {
+                var i = 0;
+                foreach (ResourceManifest manifest in manifests)
+                {
+                    builder.AddMarkupContent(i++, $"<!-- Assembly: {manifest.Assembly} -->");
+                    if (stylesheets)
+                        builder.AddContent(i++, manifest.Stylesheets(variables));
+                    if (scripts)
+                        builder.AddContent(i++, manifest.Scripts(variables));
+                }
+            }
+
+            return Fragment;
+        }
+
+        //
+
+        public static RenderFragment Render
         (
             IEnumerable<ResourceManifest> manifests,
             Dictionary<string, string>?   variables = null
         )
         {
-            StringBuilder result = new StringBuilder();
-            foreach (ResourceManifest manifest in manifests)
-            {
-                result.AppendLine($"<!-- Assembly: {manifest.Assembly} -->");
-                result.AppendLine(manifest.Stylesheets(variables));
-                result.AppendLine(manifest.Scripts(variables));
-            }
-
-            return new MarkupString(result.ToString());
+            return Render(manifests, true, true, variables);
         }
 
-        public static MarkupString RenderScripts(
+        public static RenderFragment Render(
             ResourceManifest            manifest,
             Dictionary<string, string>? variables = null
         )
         {
-            StringBuilder result = new StringBuilder();
-            result.AppendLine($"<!-- Assembly: {manifest.Assembly} -->");
-            result.AppendLine(manifest.Scripts(variables));
-
-            return new MarkupString(result.ToString());
+            return Render(new[] {manifest}, variables);
         }
 
-        public static MarkupString RenderScripts
+        //
+
+        public static RenderFragment RenderScripts
         (
             IEnumerable<ResourceManifest> manifests,
             Dictionary<string, string>?   variables = null
         )
         {
-            StringBuilder result = new StringBuilder();
-            foreach (ResourceManifest manifest in manifests)
-            {
-                result.AppendLine($"<!-- Assembly: {manifest.Assembly} -->");
-                result.AppendLine(manifest.Scripts(variables));
-            }
-
-            return new MarkupString(result.ToString());
+            return Render(manifests, false, true, variables);
         }
 
-        public static MarkupString RenderStylesheets(
+        public static RenderFragment RenderScripts(
             ResourceManifest            manifest,
             Dictionary<string, string>? variables = null
         )
         {
-            StringBuilder result = new StringBuilder();
-            result.AppendLine($"<!-- Assembly: {manifest.Assembly} -->");
-            result.AppendLine(manifest.Stylesheets(variables));
-
-            return new MarkupString(result.ToString());
+            return RenderScripts(new[] {manifest}, variables);
         }
 
-        public static MarkupString RenderStylesheets
+        //
+
+        public static RenderFragment RenderStylesheets
         (
             IEnumerable<ResourceManifest> manifests,
             Dictionary<string, string>?   variables = null
         )
         {
-            StringBuilder result = new StringBuilder();
-            foreach (ResourceManifest manifest in manifests)
-            {
-                result.AppendLine($"<!-- Assembly: {manifest.Assembly} -->");
-                result.AppendLine(manifest.Stylesheets(variables));
-            }
+            return Render(manifests, true, false, variables);
+        }
 
-            return new MarkupString(result.ToString());
+        public static RenderFragment RenderStylesheets(
+            ResourceManifest            manifest,
+            Dictionary<string, string>? variables = null
+        )
+        {
+            return RenderStylesheets(new[] {manifest}, variables);
         }
     }
 }
