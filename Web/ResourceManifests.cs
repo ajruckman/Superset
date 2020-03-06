@@ -10,5 +10,8 @@ namespace Superset.Web
 
         public static ResourceManifest LocalCSS =
             new ResourceManifest(nameof(Superset), stylesheetsExternal: new[] {"/css/Local.css"});
+            
+        public static ResourceManifest LocalStyledCSS =
+            new ResourceManifest(nameof(Superset), stylesheetsExternal: new[] {"/css/Local_Style.{{ThemeVariant}}.css"});        
     }
 }
