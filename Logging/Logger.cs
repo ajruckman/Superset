@@ -47,10 +47,10 @@ namespace Superset.Logging
             };
 
             _history.Add(message);
-            message.Print();
+            message.Print(false);
             OnDebug?.Trigger();
             OnAny?.Trigger();
-            
+
             return message;
         }
 
@@ -65,14 +65,14 @@ namespace Superset.Logging
             };
 
             _history.Add(message);
-            message.Print();
+            message.Print(false);
             OnInfo?.Trigger();
             OnAny?.Trigger();
-            
+
             return message;
         }
 
-        public Message Warning(string text, Exception e = null, Fields meta = null)
+        public Message Warning(string text, Exception e = null, Fields meta = null, bool printStacktrace = false)
         {
             Message message = new Message
             {
@@ -84,14 +84,14 @@ namespace Superset.Logging
             };
 
             _history.Add(message);
-            message.Print();
+            message.Print(printStacktrace);
             OnWarning?.Trigger();
             OnAny?.Trigger();
-            
+
             return message;
         }
 
-        public Message Error(string text, Exception e, Fields meta = null)
+        public Message Error(string text, Exception e, Fields meta = null, bool printStacktrace = false)
         {
             Message message = new Message
             {
@@ -103,13 +103,10 @@ namespace Superset.Logging
             };
 
             _history.Add(message);
-            message.Print();
+            message.Print(printStacktrace);
             OnError?.Trigger();
             OnAny?.Trigger();
 
-            Console.WriteLine(message.Level);
-            Console.WriteLine("^^^ ");
-            Console.WriteLine(message == null);
             return message;
         }
 
@@ -137,7 +134,17 @@ namespace Superset.Logging
             if (Meta != null && Meta.Count > 0)
                 result += "\t" + FormatMeta(Meta);
 
-            if (Exception != null)
+            return result;
+        }
+
+        public string ToString(bool printStacktrace)
+        {
+            string result = Text;
+
+            if (Meta != null && Meta.Count > 0)
+                result += "\t" + FormatMeta(Meta);
+
+            if (Exception != null && printStacktrace)
             {
                 result += "\nStacktrace:";
                 result += "\n" + Exception;
@@ -146,9 +153,9 @@ namespace Superset.Logging
             return result;
         }
 
-        public void Print()
+        public void Print(bool printStacktrace)
         {
-            string formatted = $"{FormatLevel(Level)} [{DateTime.Now:HH:mm:ss.fff}] {ToString()}";
+            string formatted = $"{FormatLevel(Level)} [{DateTime.Now:HH:mm:ss.fff}] {ToString(printStacktrace)}";
 
             Console.WriteLine(formatted);
             Debug.WriteLine(formatted);
