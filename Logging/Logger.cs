@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using Superset.Common;
 
@@ -91,7 +92,7 @@ namespace Superset.Logging
             return message;
         }
 
-        public Message Error(string text, Exception e, Fields meta = null, bool printStacktrace = false)
+        public Message Error(string text, Exception e = null, Fields meta = null, bool printStacktrace = false)
         {
             Message message = new Message
             {
@@ -127,12 +128,15 @@ namespace Superset.Logging
         public Fields       Meta      { get; set; }
         public Exception    Exception { get; set; }
 
+        private const string Delimiter       = "     ";
+        private const string MultilinePrefix = "                      ";
+
         public override string ToString()
         {
             string result = Text;
 
             if (Meta != null && Meta.Count > 0)
-                result += "\t" + FormatMeta(Meta);
+                result += Delimiter + FormatMeta(Meta);
 
             return result;
         }
@@ -142,12 +146,16 @@ namespace Superset.Logging
             string result = Text;
 
             if (Meta != null && Meta.Count > 0)
-                result += "\t" + FormatMeta(Meta);
+                result += Delimiter + FormatMeta(Meta);
 
             if (Exception != null && printStacktrace)
             {
-                result += "\nStacktrace:";
-                result += "\n" + Exception;
+                result += "\n" + MultilinePrefix + "Stacktrace:";
+
+                using StringReader reader = new StringReader(Exception.ToString());
+
+                for (string line = reader.ReadLine(); line != null; line = reader.ReadLine())
+                    result += "\n" + MultilinePrefix + line;
             }
 
             return result;
