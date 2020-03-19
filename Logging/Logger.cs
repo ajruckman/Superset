@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Superset.Common;
 
 // ReSharper disable MemberCanBeInternal
@@ -118,7 +119,24 @@ namespace Superset.Logging
     }
 
     // ReSharper disable once ClassNeverInstantiated.Global
-    public class Fields : OrderedDictionary { }
+    public class Fields : OrderedDictionary
+    {
+        private const BindingFlags BindingFlags =
+            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance;
+
+        public Fields() { }
+
+        public Fields(object source)
+        {
+            Type t = source.GetType();
+
+            foreach (FieldInfo member in t.GetFields(BindingFlags))
+                Add(member.Name, member.GetValue(source));
+
+            foreach (PropertyInfo member in t.GetProperties(BindingFlags))
+                Add(member.Name, member.GetValue(source));
+        }
+    }
 
     public sealed class Message
     {

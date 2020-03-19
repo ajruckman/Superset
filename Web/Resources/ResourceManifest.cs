@@ -125,6 +125,11 @@ namespace Superset.Web.Resources
                 var i = 0;
                 foreach (ResourceManifest manifest in manifests ?? new List<ResourceManifest>())
                 {
+                    builder.OpenElement(++i, "section");
+                    builder.AddAttribute(++i, "hidden", "hidden");
+                    builder.AddContent(++i, $"Assembly: {manifest.Assembly}");
+                    builder.CloseElement();
+                    
                     if (stylesheets)
                         builder.AddContent(++i, manifest.Stylesheets(variables));
                     if (scripts)
