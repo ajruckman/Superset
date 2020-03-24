@@ -1,41 +1,42 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace Superset.Web.Listeners
 {
     public sealed class ClickListener
     {
-        private readonly string _targetID;
+        private readonly ElementReference _element;
 
-        public ClickListener(string targetID)
+        public ClickListener(ElementReference element)
         {
-            _targetID = targetID;
+            _element = element;
         }
 
         public ValueTask<object> Initialize(IJSRuntime runtime)
         {
             return runtime.InvokeAsync<object>(
-                "window.clickCallback",
-                _targetID,
+                "window.Superset_AddClickCallback",
+                _element,
                 DotNetObjectReference.Create(this)
             );
         }
 
         [JSInvokable]
-        public void OuterClick(int button, int x, int y, bool shift, bool control, string targetID)
+        public void OuterClick(int button, string targetID, int x, int y, bool shift, bool control)
         {
             OnOuterClick?.Invoke(new ClickArgs(button, x, y, shift, control, targetID));
         }
 
         [JSInvokable]
-        public void Click(int button, int x, int y, bool shift, bool control, string targetID)
+        public void Click(int button, string targetID, int x, int y, bool shift, bool control)
         {
             OnClick?.Invoke(new ClickArgs(button, x, y, shift, control, targetID));
         }
 
         [JSInvokable]
-        public void InnerClick(int button, int x, int y, bool shift, bool control, string targetID)
+        public void InnerClick(int button, string targetID, int x, int y, bool shift, bool control)
         {
             OnInnerClick?.Invoke(new ClickArgs(button, x, y, shift, control, targetID));
         }
@@ -57,11 +58,11 @@ namespace Superset.Web.Listeners
             }
 
             public readonly int    Button;
+            public readonly string TargetID;
             public readonly int    X;
             public readonly int    Y;
             public readonly bool   Shift;
             public readonly bool   Control;
-            public readonly string TargetID;
         }
     }
 }

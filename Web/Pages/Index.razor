@@ -24,21 +24,21 @@
     }
 </style>
 
-<div class="Outer" id="Outer1">
+<div class="Outer" id="Outer1" tabindex="0">
     <p>Outer</p>
 
-    <div class="Inner" id="Inner1">
+    <div class="Inner" id="Inner1" @ref="@_inner1" tabindex="0">
         <p>Inner</p>
-        <div class="Nested"></div>
+        <div class="Nested" tabindex="0"></div>
     </div>
 </div>
 
 
-<div class="Outer" id="Outer2">
+<div class="Outer" id="Outer2" tabindex="0">
     <p>Outer</p>
 
-    <div class="Inner" id="Inner2">
+    <div class="Inner" id="Inner2" @ref="@_inner2" tabindex="0">
         <p>Inner</p>
-        <div class="Nested"></div>
+        <div class="Nested" tabindex="0"></div>
     </div>
 </div>
