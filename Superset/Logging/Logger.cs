@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Superset.Common;
+using Superset.Web.State;
 
 // ReSharper disable MemberCanBeInternal
 // ReSharper disable MemberCanBePrivate.Global
