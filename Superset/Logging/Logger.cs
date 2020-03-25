@@ -140,14 +140,16 @@ namespace Superset.Logging
 
     public sealed class Message
     {
+        private const string Delimiter       = "     ";
+        private const string MultilinePrefix = "                      ";
+
+        private readonly int MetaLeftPadding = 125 - Delimiter.Length - 22;
+
         public DateTime     Time      { get; set; }
         public MessageLevel Level     { get; set; }
         public string       Text      { get; set; }
         public Fields       Meta      { get; set; }
         public Exception    Exception { get; set; }
-
-        private const string Delimiter       = "     ";
-        private const string MultilinePrefix = "                      ";
 
         public override string ToString()
         {
@@ -159,12 +161,17 @@ namespace Superset.Logging
             return result;
         }
 
-        public string ToString(bool printStacktrace)
+        public string ToString(bool printStacktrace, bool padded = true)
         {
             string result = Text;
 
             if (Meta != null && Meta.Count > 0)
+            {
+                if (result.Length < MetaLeftPadding && padded)
+                    result += new string(' ', MetaLeftPadding - result.Length);
+
                 result += Delimiter + FormatMeta(Meta);
+            }
 
             if (Exception != null && printStacktrace)
             {
