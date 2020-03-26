@@ -1,17 +1,20 @@
-﻿using Superset.Logging;
+﻿using System;
+using Superset.Logging;
 
 namespace Program
 {
-    class Program
+    internal static class Program
     {
-        static void Main(string[] args)
+        private static void Main()
         {
-            Logger logger = new Logger();
+            Logger logger = new Logger(printSourceInfo:true, projectRoot:"Superset");
 
-            for (int i = 0; i < 130; i++)
+            for (var i = 0; i < 130; i++)
             {
                 logger.Info(new string('-', i), new Fields {{"a", 1}});
             }
+
+            logger.Warning("Test exception", new Exception("asdf"), printStacktrace:true);
         }
     }
 }

@@ -2,7 +2,7 @@ using System;
 
 namespace Superset.Common
 {
-    public interface IOption<T>
+    public interface IOption<out T>
         where T : IEquatable<T>
     {
         T      ID           { get; }
