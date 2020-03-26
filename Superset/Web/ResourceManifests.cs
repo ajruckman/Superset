@@ -8,6 +8,9 @@ namespace Superset.Web
         public static ResourceManifest SaveAsFile =
             new ResourceManifest(nameof(Superset), new[] {"js/SaveAsFile.js"});
 
+        public static ResourceManifest FocusElement =
+            new ResourceManifest(nameof(Superset), new[] {"js/FocusElement.js"});
+
         public static ResourceManifest Listeners =
             new ResourceManifest(nameof(Superset), new[] {"js/Utilities.js", "js/ClickListener.js", "js/KeyListener.js"});
 

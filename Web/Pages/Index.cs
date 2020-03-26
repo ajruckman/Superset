@@ -1,6 +1,9 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Superset.Web.Listeners;
+using Superset.Web.Utilities;
 
 namespace Web.Pages
 {
@@ -8,6 +11,7 @@ namespace Web.Pages
     {
         private ElementReference _inner1;
         private ElementReference _inner2;
+        private ElementReference _text1;
 
         ClickListener _clickListener1;
         ClickListener _clickListener2;
@@ -49,6 +53,12 @@ namespace Web.Pages
                 Console.WriteLine($"Outer1 -> OnKeyUp      {args.Key} {args.TargetID} {args.Shift} {args.Control}");
             _keyListener1.OnInnerKeyUp += (args) =>
                 Console.WriteLine($"Outer1 -> OnInnerKeyUp {args.Key} {args.TargetID} {args.Shift} {args.Control}");
+
+            Task.Run(() =>
+            {
+                Thread.Sleep(1000);
+                Utilities.FocusElement(JSRuntime, _text1);
+            });
         }
     }
 }
