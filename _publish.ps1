@@ -8,13 +8,14 @@ function Clean-DotNETProject
 
 Clean-DotNETProject
 
+cd .\Superset\
 dotnet pack -c Debug -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
+cd ..
 
-#if (!(Test-Path .\_published\))
-#{
-#    md .\_published\
-#}
-#rm -Force .\_published\*
+if (!(Test-Path .\_published\))
+{
+    md .\_published\
+}
 
 Copy-Item .\Superset\bin\Debug\*.nupkg .\_published\ -ErrorAction SilentlyContinue
 Copy-Item .\Superset\bin\Debug\*.snupkg .\_published\ -ErrorAction SilentlyContinue
