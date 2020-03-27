@@ -1,0 +1,46 @@
+﻿@using Superset.Web.Listeners
+
+@inject IJSRuntime JSRuntime
+
+@page "/"
+
+<style>
+    .Outer {
+        width: 400px;
+        height: 400px;
+        background-color: red;
+    }
+    
+    .Inner {
+        width: 200px;
+        height: 200px;
+        background-color: blue;
+    }
+    
+    .Nested {
+        width: 100px;
+        height: 100px;
+        background-color: green;
+    }
+</style>
+
+<input type="text" @ref="@_text1"/>
+
+<div class="Outer" id="Outer1" tabindex="0">
+    <p>Outer</p>
+
+    <div class="Inner" id="Inner1" @ref="@_inner1" tabindex="0">
+        <p>Inner</p>
+        <div class="Nested" tabindex="0"></div>
+    </div>
+</div>
+
+
+<div class="Outer" id="Outer2" tabindex="0">
+    <p>Outer</p>
+
+    <div class="Inner" id="Inner2" @ref="@_inner2" tabindex="0">
+        <p>Inner</p>
+        <div class="Nested" tabindex="0"></div>
+    </div>
+</div>

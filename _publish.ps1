@@ -8,15 +8,17 @@ function Clean-DotNETProject
 
 Clean-DotNETProject
 
-dotnet pack -c Debug
+dotnet pack -c Debug -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
 
-if (!(Test-Path .\_published\))
-{
-    md .\_published\
-}
-rm -Force .\_published\*
+#if (!(Test-Path .\_published\))
+#{
+#    md .\_published\
+#}
+#rm -Force .\_published\*
 
-Copy-Item .\bin\Debug\*.nupkg .\_published\ -ErrorAction SilentlyContinue
-Copy-Item .\bin\Release\*.nupkg .\_published\ -ErrorAction SilentlyContinue
+Copy-Item .\Superset\bin\Debug\*.nupkg .\_published\ -ErrorAction SilentlyContinue
+Copy-Item .\Superset\bin\Debug\*.snupkg .\_published\ -ErrorAction SilentlyContinue
+Copy-Item .\Superset\bin\Release\*.nupkg .\_published\ -ErrorAction SilentlyContinue
+Copy-Item .\Superset\bin\Release\*.snupkg .\_published\ -ErrorAction SilentlyContinue
 
 Remove-Item -ErrorAction Ignore -Force -Recurse $HOME\.nuget\packages\superset\
