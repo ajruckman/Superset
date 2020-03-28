@@ -9,11 +9,9 @@ namespace Superset.Logging
 {
     public sealed class Message
     {
-        private const string Delimiter                  = "     ";
-        private const string MultilinePrefix            = "                      ";
-        private const int    MinAbsoluteMetaLeftPadding = 175;
-
-        private static readonly int MinMetaLeftPadding = MinAbsoluteMetaLeftPadding - Delimiter.Length - 22;
+        private const           string Delimiter          = "     ";
+        private const           string MultilinePrefix    = "                      ";
+        private static readonly int    MinMetaLeftPadding = 175 - Delimiter.Length;
 
         public DateTime     Time      { get; set; }
         public MessageLevel Level     { get; set; }
@@ -56,7 +54,7 @@ namespace Superset.Logging
             return result;
         }
 
-        public string Format(bool printStacktrace, bool printSource = true, bool padded = true)
+        public string Format(bool printStacktrace, bool printSource = true, bool padded = true, int? minMetaLeftPadding = null)
         {
             var result = "";
 
@@ -67,8 +65,11 @@ namespace Superset.Logging
 
             if (Meta != null && Meta.Count > 0)
             {
-                if (result.Length < MinMetaLeftPadding && padded)
-                    result += new string(' ', MinMetaLeftPadding - result.Length);
+                int leftPadding = minMetaLeftPadding != null
+                    ? minMetaLeftPadding.Value - Delimiter.Length
+                    : MinMetaLeftPadding;
+                if (result.Length < leftPadding && padded)
+                    result += new string(' ', leftPadding - result.Length);
 
                 result += Delimiter + FormatMeta(Meta);
             }
@@ -86,10 +87,10 @@ namespace Superset.Logging
             return result;
         }
 
-        public void Print(bool printStacktrace, bool printSource = true, bool padded = true)
+        public void Print(bool printStacktrace, bool printSource = true, bool padded = true, int? minMetaLeftPadding = null)
         {
             string formatted =
-                $"{FormatLevel(Level)} [{DateTime.Now:HH:mm:ss.fff}] {Format(printStacktrace, printSource, padded)}";
+                $"{FormatLevel(Level)} [{DateTime.Now:HH:mm:ss.fff}] {Format(printStacktrace, printSource, padded, minMetaLeftPadding)}";
 
             Console.WriteLine(formatted);
             Debug.WriteLine(formatted);

@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using Superset.Web.State;
 
 // ReSharper disable MemberCanBeInternal
 // ReSharper disable MemberCanBePrivate.Global
@@ -17,22 +16,24 @@ namespace Superset.Logging
         private readonly List<Message> _history = new List<Message>();
         private          string?       _status;
 
-        public event Action<Message> OnAny;
-        public event Action<Message> OnDebug;
-        public event Action<Message> OnInfo;
-        public event Action<Message> OnWarning;
-        public event Action<Message> OnError;
-        public event Action<Message> OnStatistic;
+        public event Action<Message>? OnAny;
+        public event Action<Message>? OnDebug;
+        public event Action<Message>? OnInfo;
+        public event Action<Message>? OnWarning;
+        public event Action<Message>? OnError;
+        public event Action<Message>? OnStatistic;
 
-        public event Action OnStatusChange;
+        public event Action? OnStatusChange;
 
         public readonly bool   PrintSourceInfo;
         public readonly string ProjectRoot;
+        public readonly int?   MinMetaLeftPadding;
 
-        public Logger(bool printSourceInfo = false, string projectRoot = "")
+        public Logger(bool printSourceInfo = false, string projectRoot = "", int? minMetaLeftPadding = null)
         {
-            PrintSourceInfo = printSourceInfo;
-            ProjectRoot     = projectRoot;
+            PrintSourceInfo    = printSourceInfo;
+            ProjectRoot        = projectRoot;
+            MinMetaLeftPadding = minMetaLeftPadding;
         }
 
         public string? Status
@@ -54,7 +55,7 @@ namespace Superset.Logging
         )
         {
             Message message = BuildMessage(MessageLevel.DEBG, text, null, meta, sourceName, sourceFile, sourceLine);
-            message.Print(false, PrintSourceInfo);
+            message.Print(false, PrintSourceInfo, true, MinMetaLeftPadding);
             return message;
         }
 
@@ -67,7 +68,7 @@ namespace Superset.Logging
         )
         {
             Message message = BuildMessage(MessageLevel.INFO, text, null, meta, sourceName, sourceFile, sourceLine);
-            message.Print(false, PrintSourceInfo);
+            message.Print(false, PrintSourceInfo, true, MinMetaLeftPadding);
             return message;
         }
 
@@ -82,7 +83,7 @@ namespace Superset.Logging
         )
         {
             Message message = BuildMessage(MessageLevel.WARN, text, e, meta, sourceName, sourceFile, sourceLine);
-            message.Print(printStacktrace, PrintSourceInfo);
+            message.Print(printStacktrace, PrintSourceInfo, true, MinMetaLeftPadding);
             return message;
         }
 
@@ -98,13 +99,13 @@ namespace Superset.Logging
         )
         {
             e ??= new Exception(text);
-            
+
             Message message = BuildMessage(MessageLevel.ERRR, text, e, meta, sourceName, sourceFile, sourceLine);
-            message.Print(printStacktrace, PrintSourceInfo);
+            message.Print(printStacktrace, PrintSourceInfo, true, MinMetaLeftPadding);
 
             if (@throw)
                 throw e;
-            
+
             return message;
         }
 
@@ -117,7 +118,7 @@ namespace Superset.Logging
         )
         {
             Message message = BuildMessage(MessageLevel.STAT, text, null, meta, sourceName, sourceFile, sourceLine);
-            message.Print(false, PrintSourceInfo);
+            message.Print(false, PrintSourceInfo, true, MinMetaLeftPadding);
             return message;
         }
 
