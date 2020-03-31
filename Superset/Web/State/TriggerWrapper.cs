@@ -30,9 +30,9 @@ namespace Superset.Web.State
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "section");
-            builder.AddAttribute(1, "key",   _key);
             builder.AddAttribute(2, "style", "display: contents;");
             builder.AddContent(3, ChildContent);
+            builder.SetKey(_key);
             builder.CloseElement();
         }
 
