@@ -2,10 +2,11 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using Superset.Web.JSInterop;
 
 namespace Superset.Web.Listeners
 {
-    public sealed class KeyListener
+    public sealed class KeyListener : IJSTask
     {
         private readonly ElementReference _element;
 
@@ -14,9 +15,9 @@ namespace Superset.Web.Listeners
             _element = element;
         }
 
-        public ValueTask<object> Initialize(IJSRuntime runtime)
+        public async Task Execute(IJSRuntime runtime)
         {
-            return runtime.InvokeAsync<object>(
+            await runtime.InvokeAsync<object>(
                 "window.Superset_AddKeyCallback",
                 _element,
                 DotNetObjectReference.Create(this)

@@ -1,5 +1,4 @@
 #nullable enable
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Components;
@@ -49,28 +48,32 @@ namespace Superset.Web.Resources
 
         public string Assembly { get; }
 
-        public RenderFragment Stylesheets(Dictionary<string, string>? variables = null)
+        public List<string> Stylesheets(Dictionary<string, string>? variables = null)
         {
-            void Fragment(RenderTreeBuilder b)
-            {
-                var i = 0;
-                foreach (string stylesheet in _stylesheets ?? new List<string>())
-                    b.AddContent(++i, Stylesheet(Expand(stylesheet, variables)));
-            }
+            return ((_stylesheets ?? new List<string>()).Select(stylesheet => Expand(stylesheet, variables))).ToList();
 
-            return Fragment;
+            // void Fragment(RenderTreeBuilder b)
+            // {
+            //     var i = 0;
+            //     foreach (string stylesheet in _stylesheets ?? new List<string>())
+            //         b.AddContent(++i, Stylesheet(Expand(stylesheet, variables)));
+            // }
+            //
+            // return Fragment;
         }
 
-        public RenderFragment Scripts(Dictionary<string, string>? variables = null)
+        public List<string> Scripts(Dictionary<string, string>? variables = null)
         {
-            void Fragment(RenderTreeBuilder b)
-            {
-                var i = 0;
-                foreach (string script in _scripts ?? new List<string>())
-                    b.AddContent(++i, Script(Expand(script, variables)));
-            }
+            return ((_scripts ?? new List<string>()).Select(script => Expand(script, variables))).ToList();
 
-            return Fragment;
+            // void Fragment(RenderTreeBuilder b)
+            // {
+            //     var i = 0;
+            //     foreach (string script in _scripts ?? new List<string>())
+            //         b.AddContent(++i, Script(Expand(script, variables)));
+            // }
+            //
+            // return Fragment;
         }
 
         // https://stackoverflow.com/a/7957728/9911189
@@ -123,17 +126,34 @@ namespace Superset.Web.Resources
             void Fragment(RenderTreeBuilder builder)
             {
                 var i = 0;
+
+                HashSet<string> seenStylesheets = new HashSet<string>();
+                HashSet<string> seenScripts     = new HashSet<string>();
+
                 foreach (ResourceManifest manifest in manifests ?? new List<ResourceManifest>())
                 {
                     builder.OpenElement(++i, "section");
                     builder.AddAttribute(++i, "hidden", "hidden");
                     builder.AddContent(++i, $"Assembly: {manifest.Assembly}");
                     builder.CloseElement();
-                    
+
                     if (stylesheets)
-                        builder.AddContent(++i, manifest.Stylesheets(variables));
+                        foreach (string stylesheet in manifest.Stylesheets(variables))
+                        {
+                            if (seenStylesheets.Contains(stylesheet)) continue;
+                            
+                            builder.AddContent(++i, Stylesheet(stylesheet));
+                            seenStylesheets.Add(stylesheet);
+                        }
+
                     if (scripts)
-                        builder.AddContent(++i, manifest.Scripts(variables));
+                        foreach (string script in manifest.Scripts(variables))
+                        {
+                            if (seenScripts.Contains(script)) continue;
+
+                            builder.AddContent(++i, Script(script));
+                            seenScripts.Add(script);
+                        }
                 }
             }
 

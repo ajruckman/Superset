@@ -79,7 +79,7 @@ namespace Superset.Logging
                 Event = new Fields
                 {
                     {"Time", message.Time},
-                    {"Level", message.Level},
+                    {"Level", message.Level.ToString()},
                     {"Text", message.Text},
                     {"Meta", message.Meta},
                     {"Exception", exception},

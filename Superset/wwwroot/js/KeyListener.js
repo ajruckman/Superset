@@ -1,6 +1,6 @@
-window.Superset_AddKeyCallback = function (target, dotnetHelper) {
+window.Superset_AddKeyCallback = function (element, dotnetHelper) {
     window.Superset_KeyListeners[Math.random().toString(36).substring(2, 15)] = {
-        target: target,
+        target: element,
         dotnetHelper: dotnetHelper,
     };
 };
