@@ -1,6 +1,6 @@
-window.Superset_AddClickCallback = function (target, dotnetHelper) {
+window.Superset_AddClickCallback = function (element, dotnetHelper) {
     window.Superset_ClickListeners[Math.random().toString(36).substring(2, 15)] = {
-        target: target,
+        target: element,
         dotnetHelper: dotnetHelper,
     };
 };

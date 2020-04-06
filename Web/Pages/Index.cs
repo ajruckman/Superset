@@ -21,10 +21,10 @@ namespace Web.Pages
             if (!firstRender) return;
 
             _clickListener1 = new ClickListener(_inner1);
-            _clickListener1.Initialize(JSRuntime);
+            _clickListener1.Execute(JSRuntime);
 
             _clickListener2 = new ClickListener(_inner2);
-            _clickListener2.Initialize(JSRuntime);
+            _clickListener2.Execute(JSRuntime);
 
             _clickListener1.OnOuterClick += (args) =>
                 Console.WriteLine($"Outer1 -> Outer {args.Button} {args.X} {args.Y} {args.Shift} {args.Control}");
@@ -45,7 +45,7 @@ namespace Web.Pages
             //
 
             KeyListener _keyListener1 = new KeyListener(_inner1);
-            _keyListener1.Initialize(JSRuntime);
+            _keyListener1.Execute(JSRuntime);
 
             _keyListener1.OnOuterKeyUp += (args) =>
                 Console.WriteLine($"Outer1 -> Outer        {args.Key} {args.TargetID} {args.Shift} {args.Control}");
