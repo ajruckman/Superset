@@ -10,8 +10,6 @@ namespace Superset.Utilities
         private readonly OnElapsed _onElapsed;
         private readonly object    _valueLock = new object();
 
-        private T _value;
-
         public Debouncer(OnElapsed onElapsed, T initialValue, int milliseconds = 200)
         {
             _onElapsed = onElapsed;
@@ -22,17 +20,19 @@ namespace Superset.Utilities
             {
                 lock (_valueLock)
                 {
-                    _onElapsed.Invoke(_value);
+                    _onElapsed.Invoke(Value);
                 }
             };
         }
+
+        public T Value { get; private set; }
 
         public void Reset(T newValue)
         {
             _debouncer.Stop();
             lock (_valueLock)
             {
-                _value = newValue;
+                Value = newValue;
             }
 
             _debouncer.Start();
