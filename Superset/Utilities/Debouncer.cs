@@ -13,6 +13,7 @@ namespace Superset.Utilities
         public Debouncer(OnElapsed onElapsed, T initialValue, int milliseconds = 200)
         {
             _onElapsed = onElapsed;
+            Value      = initialValue;
             _debouncer = new Timer(milliseconds);
             _debouncer.Stop();
             _debouncer.AutoReset = false;
