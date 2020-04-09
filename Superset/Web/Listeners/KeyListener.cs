@@ -42,9 +42,9 @@ namespace Superset.Web.Listeners
             OnInnerKeyUp?.Invoke(new KeyArgs(key, targetID, shift, control));
         }
 
-        public event Action<KeyArgs> OnOuterKeyUp;
-        public event Action<KeyArgs> OnKeyUp;
-        public event Action<KeyArgs> OnInnerKeyUp;
+        public event Action<KeyArgs>? OnOuterKeyUp;
+        public event Action<KeyArgs>? OnKeyUp;
+        public event Action<KeyArgs>? OnInnerKeyUp;
 
         public struct KeyArgs
         {

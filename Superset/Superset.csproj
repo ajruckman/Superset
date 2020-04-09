@@ -4,10 +4,11 @@
         <TargetFramework>netcoreapp3.1</TargetFramework>
         <RazorLangVersion>3.0</RazorLangVersion>
         <LangVersion>8</LangVersion>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <PropertyGroup>
-        <VersionPrefix>1.14.2</VersionPrefix>
+        <VersionPrefix>1.15.0</VersionPrefix>
         <VersionSuffix>alpha</VersionSuffix>
         <PackageProjectUrl>https://github.com/ajruckman/Superset/</PackageProjectUrl>
         <RepositoryUrl>https://github.com/ajruckman/Superset/</RepositoryUrl>

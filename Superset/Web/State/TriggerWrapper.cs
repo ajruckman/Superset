@@ -10,14 +10,14 @@ namespace Superset.Web.State
 {
     public class TriggerWrapper : ComponentBase
     {
-        private readonly object _keyLock = new object();
-        private          bool   _canRender;
-        private          string _key;
+        private readonly object  _keyLock = new object();
+        private          bool    _canRender;
+        private          string? _key;
 
-        [Parameter] public RenderFragment  ChildContent { get; set; }
-        [Parameter] public UpdateTrigger   Trigger      { get; set; }
-        [Parameter] public UpdateTrigger[] Triggers     { get; set; }
-        [Parameter] public bool            Protected    { get; set; }
+        [Parameter] public RenderFragment?  ChildContent { get; set; }
+        [Parameter] public UpdateTrigger?   Trigger      { get; set; }
+        [Parameter] public UpdateTrigger[]? Triggers     { get; set; }
+        [Parameter] public bool             Protected    { get; set; }
 
         private void NewKey()
         {

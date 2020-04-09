@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Superset.Web.Listeners;
 using Superset.Web.Utilities;
+using Superset.Web.Validation;
 
 namespace Web.Pages
 {
@@ -13,8 +14,39 @@ namespace Web.Pages
         private ElementReference _inner2;
         private ElementReference _text1;
 
-        ClickListener _clickListener1;
-        ClickListener _clickListener2;
+        ClickListener                              _clickListener1;
+        ClickListener                              _clickListener2;
+        private Validator<CustomValidationResults> _validator;
+
+        private enum CustomValidationResults
+        {
+            Undefined,
+            TooSmall,
+            TooBig,
+            Valid,
+            Invalid
+        }
+
+        protected override void OnInitialized()
+        {
+            _validator = new Validator<CustomValidationResults>(() =>
+            {
+                Console.WriteLine("---");
+                return new[]
+                {
+                    new Validation<CustomValidationResults>(CustomValidationResults.Invalid, "Not OK"),
+                    new Validation<CustomValidationResults>(CustomValidationResults.TooBig,  "Warning"),
+                    new Validation<CustomValidationResults>(CustomValidationResults.Valid,   "OK"),
+                };
+            });
+            _validator.Register("field1",
+                () => new[] {new Validation<CustomValidationResults>(CustomValidationResults.Valid, "All OK")});
+
+            _validator.Validate();
+
+            Console.WriteLine(_validator.AnyOfType(CustomValidationResults.TooSmall));
+            Console.WriteLine(_validator.AnyOfType(CustomValidationResults.TooBig));
+        }
 
         protected override void OnAfterRender(bool firstRender)
         {
@@ -53,6 +85,8 @@ namespace Web.Pages
                 Console.WriteLine($"Outer1 -> OnKeyUp      {args.Key} {args.TargetID} {args.Shift} {args.Control}");
             _keyListener1.OnInnerKeyUp += (args) =>
                 Console.WriteLine($"Outer1 -> OnInnerKeyUp {args.Key} {args.TargetID} {args.Shift} {args.Control}");
+
+            //
 
             Task.Run(() =>
             {

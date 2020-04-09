@@ -42,9 +42,9 @@ namespace Superset.Web.Listeners
             OnInnerClick?.Invoke(new ClickArgs(button, x, y, shift, control, targetID));
         }
 
-        public event Action<ClickArgs> OnOuterClick;
-        public event Action<ClickArgs> OnClick;
-        public event Action<ClickArgs> OnInnerClick;
+        public event Action<ClickArgs>? OnOuterClick;
+        public event Action<ClickArgs>? OnClick;
+        public event Action<ClickArgs>? OnInnerClick;
 
         public struct ClickArgs
         {
