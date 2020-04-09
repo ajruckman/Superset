@@ -64,7 +64,7 @@ namespace Superset.Web.Validation
                     foreach (Validation<T> result in results)
                     {
                         builder2.OpenElement(++seq, "div");
-                        builder2.AddAttribute(++seq, "class", "Validation");
+                        builder2.AddAttribute(++seq, "class", "Validation Validation--" + result.Result);
 
                         builder2.OpenElement(++seq, "div");
                         builder2.AddAttribute(++seq, "class", "ValidationResult ValidationResult--" + result.Result);
@@ -92,7 +92,8 @@ namespace Superset.Web.Validation
                 throw new ArgumentOutOfRangeException(nameof(field), $"Field '{field}' has not been registered.");
 
             if (_cachedFieldResults == null)
-                throw new ArgumentNullException(nameof(_cachedFieldResults), $"RenderFieldResults() was called, but no fields have been cached.");
+                throw new ArgumentNullException(nameof(_cachedFieldResults),
+                    $"RenderFieldResults() was called, but no fields have been cached.");
 
             if (!_cachedFieldResults.ContainsKey(field))
                 throw new ArgumentNullException(nameof(field), $"Field '{field}' has not been validated.");
@@ -125,14 +126,15 @@ namespace Superset.Web.Validation
                     if (Equals(result.Result, type))
                         return true;
             }
-            
+
             if (_cachedFieldResults == null)
-                throw new ArgumentNullException(nameof(_cachedFieldResults), $"AnyOfType() was called, but no fields have been cached.");
-            
+                throw new ArgumentNullException(nameof(_cachedFieldResults),
+                    $"AnyOfType() was called, but no fields have been cached.");
+
             foreach ((string _, IEnumerable<Validation<T>> results) in _cachedFieldResults)
-                foreach (var result in results)
-                    if (Equals(result.Result, type))
-                        return true;
+            foreach (var result in results)
+                if (Equals(result.Result, type))
+                    return true;
 
             return false;
         }
