@@ -113,9 +113,15 @@ namespace Superset.Web.Validation
             return RenderResults(_cachedOverallResult, true);
         }
 
-        public bool AnyOfType(T type)
+        public bool AnyOfType(T type, bool includeOverall)
         {
-            if (_overallValidationGetter != null)
+            if (includeOverall && _overallValidationGetter == null)
+            {
+                throw new InvalidOperationException(
+                    "AnyOfType() was called with includeOverall = true, but no overall result validator was passed to Validator constructor.");
+            }
+            
+            if (includeOverall && _overallValidationGetter != null)
             {
                 if (_cachedOverallResult == null)
                     throw new ArgumentNullException(nameof(_cachedOverallResult),
