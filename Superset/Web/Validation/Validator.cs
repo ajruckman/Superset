@@ -113,7 +113,7 @@ namespace Superset.Web.Validation
             return RenderResults(_cachedOverallResult, true);
         }
 
-        public bool AnyOfType(T type, bool includeOverall)
+        public bool AnyOfType(T type, bool includeOverall = false)
         {
             if (includeOverall && _overallValidationGetter == null)
             {
