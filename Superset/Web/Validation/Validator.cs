@@ -58,7 +58,6 @@ namespace Superset.Web.Validation
 
                 builder.OpenComponent<TriggerWrapper>(++seq);
                 builder.AddAttribute(++seq, "Trigger",   _refreshTrigger);
-                builder.AddAttribute(++seq, "Protected", true);
                 builder.AddAttribute(++seq, "ChildContent", (RenderFragment) (builder2 =>
                 {
                     foreach (Validation<T> result in results)

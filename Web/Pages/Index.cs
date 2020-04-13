@@ -40,7 +40,15 @@ namespace Web.Pages
                 };
             });
             _validator.Register("field1",
-                () => new[] {new Validation<CustomValidationResults>(CustomValidationResults.Valid, "All OK")});
+                () =>
+                {
+                    return new[]
+                    {
+                        _field1value != ""
+                            ? new Validation<CustomValidationResults>(CustomValidationResults.Valid,   "All OK")
+                            : new Validation<CustomValidationResults>(CustomValidationResults.Invalid, "Required")
+                    };
+                });
 
             _validator.Validate();
 
@@ -91,8 +99,17 @@ namespace Web.Pages
             Task.Run(() =>
             {
                 Thread.Sleep(1000);
-                Utilities.FocusElement(JSRuntime, _text1);
+                // Utilities.FocusElement(JSRuntime, _text1);
             });
+        }
+
+        private string _field1value = "";
+
+        private void UpdateField1(ChangeEventArgs args)
+        {
+            _field1value = args.Value?.ToString() ?? "";
+
+            _validator.Validate();
         }
     }
 }
