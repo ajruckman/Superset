@@ -10,6 +10,8 @@ namespace Superset.Web.Validation
     {
         public delegate IEnumerable<Validation<T>> ResultGetter();
 
+        public event Action? OnValidation;
+        
         private readonly ResultGetter? _overallValidationGetter;
 
         private readonly Dictionary<string, ResultGetter> _fields         = new Dictionary<string, ResultGetter>();
@@ -44,6 +46,7 @@ namespace Superset.Web.Validation
         {
             CacheResults();
             _refreshTrigger.Trigger();
+            OnValidation?.Invoke();
         }
 
         private RenderFragment RenderResults(IEnumerable<Validation<T>> results, bool overall)
