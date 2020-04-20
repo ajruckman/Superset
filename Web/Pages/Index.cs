@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Superset.Web.Listeners;
+using Superset.Web.Markup;
 using Superset.Web.Utilities;
 using Superset.Web.Validation;
 
@@ -95,6 +96,9 @@ namespace Web.Pages
                 Console.WriteLine($"Outer1 -> OnInnerKeyUp {args.Key} {args.TargetID} {args.Shift} {args.Control}");
 
             //
+            
+            Tooltip tooltip = new Tooltip(_inner1, "Tooltip on inner 1");
+            tooltip.Execute(JSRuntime);
 
             Task.Run(() =>
             {
