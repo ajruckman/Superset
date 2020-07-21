@@ -9,7 +9,8 @@ function Clean-DotNETProject
 Clean-DotNETProject
 
 cd .\Superset\
-dotnet pack -c Debug -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
+#dotnet pack -c Debug -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
+dotnet pack -c Release -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
 cd ..
 
 if (!(Test-Path .\_published\))
