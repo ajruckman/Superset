@@ -1,6 +1,5 @@
 ﻿using Superset.Web.Resources;
 
-// ReSharper disable once CheckNamespace
 namespace Superset.Web
 {
     public static class ResourceManifests
@@ -29,6 +28,54 @@ namespace Superset.Web
                     "https://unpkg.com/@popperjs/core@2.3.3/dist/umd/popper.min.js", // https://unpkg.com/@popperjs/core@2
                     "https://unpkg.com/tippy.js@6.2.0/dist/tippy-bundle.umd.min.js" // https://unpkg.com/tippy.js@6
                 },
-                scripts: new []{"js/Tooltip.js"});
+                scripts: new[] {"js/Tooltip.js"});
+    }
+
+    public static class ResourceSets
+    {
+        private static ResourceSet Utilities =
+            new ResourceSet(nameof(Superset), nameof(Utilities),
+                new[] {"js/Utilities.js"});
+
+        //
+
+        public static ResourceSet SaveAsFile =
+            new ResourceSet(nameof(Superset), nameof(SaveAsFile),
+                new[] {"js/SaveAsFile.js"});
+
+        public static ResourceSet FocusElement =
+            new ResourceSet(nameof(Superset), nameof(FocusElement),
+                new[] {"js/FocusElement.js"});
+
+        public static ResourceSet ClickListener =
+            new ResourceSet(nameof(Superset), nameof(ClickListener),
+                new[] {"js/ClickListener.js"},
+                dependencies: new[] {Utilities});
+
+        public static ResourceSet KeyListener =
+            new ResourceSet(nameof(Superset), nameof(KeyListener),
+                new[] {"js/KeyListener.js"},
+                dependencies: new[] {Utilities});
+
+        public static ResourceSet Listeners =
+            new ResourceSet(nameof(Superset), nameof(Listeners),
+                dependencies: new[] {Utilities, ClickListener, KeyListener});
+
+        public static ResourceSet LocalCSS =
+            new ResourceSet(nameof(Superset), nameof(LocalCSS),
+                stylesheetsExternal: new[] {"/css/Local.css"});
+
+        public static ResourceSet LocalStyledCSS =
+            new ResourceSet(nameof(Superset), nameof(LocalStyledCSS),
+                stylesheetsExternal: new[] {"/css/Local.Style.{{ThemeVariant}}.css"});
+
+        public static ResourceSet Tooltip =
+            new ResourceSet(nameof(Superset), nameof(Tooltip),
+                scriptsExternal: new[]
+                {
+                    "https://unpkg.com/@popperjs/core@2.3.3/dist/umd/popper.min.js", // https://unpkg.com/@popperjs/core@2
+                    "https://unpkg.com/tippy.js@6.2.0/dist/tippy-bundle.umd.min.js", // https://unpkg.com/tippy.js@6
+                },
+                scripts: new[] {"js/Tooltip.js"});
     }
 }

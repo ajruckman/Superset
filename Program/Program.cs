@@ -1,4 +1,6 @@
-﻿using Superset.Logging;
+﻿using System.Collections.Generic;
+using Superset.Logging;
+using Superset.Web;
 
 namespace Program
 {
@@ -6,17 +8,21 @@ namespace Program
     {
         private static void Main()
         {
-            Logger logger = new Logger(printSourceInfo: true, projectRoot: "Superset", minMetaLeftPadding: 0);
+            // var x = new ResourceManifests2();
+            var                  scripts     = ResourceSets.Listeners.AllScripts();
+            var stylesheets = ResourceSets.Listeners.AllStylesheets();
+
+            // Logger logger = new Logger(printSourceInfo: true, projectRoot: "Superset", minMetaLeftPadding: 0);
 
             // for (int i = 0; i < 10000; i++)
             // {
-                // logger.Info(new string('-', 25), new Fields {{"a", 1}});
+            // logger.Info(new string('-', 25), new Fields {{"a", 1}});
             // }
 
-            for (var i = 0; i < 130; i++)
-            {
-                logger.Info(new string('-', i), new Fields {{"a", 1}});
-            }
+            // for (var i = 0; i < 130; i++)
+            // {
+            //     logger.Info(new string('-', i), new Fields {{"a", 1}});
+            // }
 
             // SplunkExporter splunkExporter = new SplunkExporter(
             // );

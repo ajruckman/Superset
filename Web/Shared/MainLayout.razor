@@ -1,6 +1,9 @@
 ﻿@using Superset.Web.Resources
 @inherits LayoutComponentBase
 
-@(ResourceManifest.Render(Configuration.Resources))
+@(Configuration.Resources.Render(variables: new Dictionary<string, string>
+{
+    {"ThemeVariant", "Dark"},
+}))
 
 @Body
