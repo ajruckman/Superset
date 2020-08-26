@@ -55,6 +55,11 @@ namespace Superset.Logging
                 httpClientHandler.ServerCertificateCustomValidationCallback +=
                     (message, certificate, chain, errors) => true;
                 _httpClient = new HttpClient(httpClientHandler);
+                
+                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator += (message, certificate2, arg3, arg4) =>
+                {
+                    
+                } 
             }
 
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Splunk", token);

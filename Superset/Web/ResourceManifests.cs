@@ -23,12 +23,12 @@ namespace Superset.Web
 
         public static ResourceManifest Tooltip =
             new ResourceManifest(nameof(Superset),
-                scriptsExternal: new[]
+                scripts: new[]
                 {
-                    "https://unpkg.com/@popperjs/core@2.3.3/dist/umd/popper.min.js", // https://unpkg.com/@popperjs/core@2
-                    "https://unpkg.com/tippy.js@6.2.0/dist/tippy-bundle.umd.min.js" // https://unpkg.com/tippy.js@6
-                },
-                scripts: new[] {"js/Tooltip.js"});
+                    "vendor/popper.min.js",           // https://unpkg.com/@popperjs/core@2
+                    "vendor/tippy-bundle.umd.min.js", // https://unpkg.com/tippy.js@6
+                    "js/Tooltip.js",
+                });
     }
 
     public static class ResourceSets
@@ -71,11 +71,11 @@ namespace Superset.Web
 
         public static ResourceSet Tooltip =
             new ResourceSet(nameof(Superset), nameof(Tooltip),
-                scriptsExternal: new[]
+                scripts: new[]
                 {
-                    "https://unpkg.com/@popperjs/core@2.3.3/dist/umd/popper.min.js", // https://unpkg.com/@popperjs/core@2
-                    "https://unpkg.com/tippy.js@6.2.0/dist/tippy-bundle.umd.min.js", // https://unpkg.com/tippy.js@6
-                },
-                scripts: new[] {"js/Tooltip.js"});
+                    "vendor/popper.min.js",           // https://unpkg.com/@popperjs/core@2
+                    "vendor/tippy-bundle.umd.min.js", // https://unpkg.com/tippy.js@6
+                    "js/Tooltip.js",
+                });
     }
 }
