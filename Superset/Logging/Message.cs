@@ -101,7 +101,7 @@ namespace Superset.Logging
 
         private static string FormatMeta(Fields meta)
         {
-            return string.Join(' ', meta.Keys.OfType<string>().Select(v => $"[{v}: {meta[v]}]"));
+            return string.Join(' ', meta.Keys.OfType<string>().Select(v => $"[{v}: {(meta[v] is Fields ? "[...]" : meta[v])}]"));
         }
     }
 }
