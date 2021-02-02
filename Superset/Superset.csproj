@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <VersionPrefix>1.17.0</VersionPrefix>
+        <VersionPrefix>1.17.2</VersionPrefix>
         <VersionSuffix>alpha</VersionSuffix>
         <PackageProjectUrl>https://github.com/ajruckman/Superset/</PackageProjectUrl>
         <RepositoryUrl>https://github.com/ajruckman/Superset/</RepositoryUrl>

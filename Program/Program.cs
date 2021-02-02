@@ -9,6 +9,9 @@ namespace Program
     {
         private static void Main()
         {
+            Log.Logger.Info("Test log", new Fields(new LogObjectTest() {ID = 1, Name = "2", Description = "3"}));
+
+            
             var a = Guid.NewGuid();
             var b = Guid.NewGuid();
 
@@ -45,6 +48,7 @@ namespace Program
             var                  scripts     = ResourceSets.Listeners.AllScripts();
             var stylesheets = ResourceSets.Listeners.AllStylesheets();
 
+
             // Logger logger = new Logger(printSourceInfo: true, projectRoot: "Superset", minMetaLeftPadding: 0);
 
             // for (int i = 0; i < 10000; i++)
@@ -71,5 +75,15 @@ namespace Program
             Console.WriteLine(x.GetHashCode());
         }
             
+    }
+
+    internal class LogObjectTest
+    {
+        public int ID { get; set; }
+        
+        public string Name { get; set; }
+        
+        [LoggerIgnore]
+        public string Description { get; set; }
     }
 }

@@ -16,10 +16,15 @@ namespace Superset.Logging
             Type t = source.GetType();
 
             foreach (FieldInfo member in t.GetFields(BindingFlags))
-                Add(member.Name, member.GetValue(source));
+                if (member.GetCustomAttribute(typeof(LoggerIgnore)) == null)
+                    Add(member.Name, member.GetValue(source));
 
             foreach (PropertyInfo member in t.GetProperties(BindingFlags))
-                Add(member.Name, member.GetValue(source));
+                if (member.GetCustomAttribute(typeof(LoggerIgnore)) == null)
+                    Add(member.Name, member.GetValue(source));
         }
     }
+
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    public class LoggerIgnore : Attribute { }
 }

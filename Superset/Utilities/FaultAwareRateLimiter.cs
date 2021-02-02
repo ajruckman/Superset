@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
@@ -65,7 +66,7 @@ namespace Superset.Utilities
                 }
                 else
                 {
-                    Console.WriteLine($"Timed out attempt to call: " + caller);
+                    Debug.WriteLine($"Timed out attempt to call: " + caller);
                 }
             }
             else
@@ -73,12 +74,12 @@ namespace Superset.Utilities
                 try
                 {
                     action.Invoke();
-                    Console.WriteLine("Initial action called successfully: " + caller);
+                    Debug.WriteLine("Initial action called successfully: " + caller);
                     onSuccess.Invoke();
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("Initial action failed: " + caller);
+                    Debug.WriteLine("Initial action failed: " + caller);
                     AddCall(caller, uniqueID, now, _baseTimeoutSeconds, e.Message);
                     onFailure.Invoke(e);
                 }
@@ -118,7 +119,7 @@ namespace Superset.Utilities
                 }
                 else
                 {
-                    Console.WriteLine($"Timed out attempt to call: " + caller);
+                    Debug.WriteLine($"Timed out attempt to call: " + caller);
                 }
             }
             else
@@ -126,12 +127,12 @@ namespace Superset.Utilities
                 try
                 {
                     TResult result = action.Invoke();
-                    Console.WriteLine("Initial action called successfully: " + caller);
+                    Debug.WriteLine("Initial action called successfully: " + caller);
                     onSuccess.Invoke(result);
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("Initial action failed: " + caller);
+                    Debug.WriteLine("Initial action failed: " + caller);
                     AddCall(caller, uniqueID, now, _baseTimeoutSeconds, e.Message);
                     onFailure.Invoke(e);
                 }
@@ -172,7 +173,7 @@ namespace Superset.Utilities
                 }
                 else
                 {
-                    Console.WriteLine($"Timed out attempt to call: " + caller);
+                    Debug.WriteLine($"Timed out attempt to call: " + caller);
                     return default!;
                 }
             }
@@ -181,12 +182,12 @@ namespace Superset.Utilities
                 try
                 {
                     TResult result = action.Invoke();
-                    Console.WriteLine("Initial action called successfully: " + caller);
+                    Debug.WriteLine("Initial action called successfully: " + caller);
                     return onSuccess.Invoke(result);
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("Initial action failed: " + caller);
+                    Debug.WriteLine("Initial action failed: " + caller);
                     AddCall(caller, uniqueID, now, _baseTimeoutSeconds, e.Message);
                     return onFailure.Invoke(e);
                 }
@@ -272,7 +273,7 @@ namespace Superset.Utilities
 
         private void HandleSuccess(string caller, TIdentifier uniqueID)
         {
-            Console.WriteLine($"Action called successfully: {caller} for {uniqueID}");
+            Debug.WriteLine($"Action called successfully: {caller} for {uniqueID}");
             RemoveCall(caller, uniqueID);
         }
 
@@ -285,12 +286,12 @@ namespace Superset.Utilities
             Exception   e
         )
         {
-            Console.WriteLine($"Action failed: {caller} for {uniqueID}");
+            Debug.WriteLine($"Action failed: {caller} for {uniqueID}");
 
             if (t.Exception == e.Message)
             {
                 uint seconds = GetTimeoutSeconds(caller, uniqueID, t, e);
-                Console.WriteLine($"New timeout: {seconds}");
+                Debug.WriteLine($"New timeout: {seconds}");
 
                 AddCall(caller, uniqueID, now, seconds, e.Message);
             }
