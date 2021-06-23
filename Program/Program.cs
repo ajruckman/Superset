@@ -9,7 +9,7 @@ namespace Program
     {
         private static void Main()
         {
-            Log.Logger.Info("Test log", new Fields(new LogObjectTest() {ID = 1, Name = "2", Description = "3"}));
+            Log.Logger.Info("Test log", new Fields(new LogObjectTest() {ID = 1, Name = "2", Description = "3", Field = 4}));
 
             
             var a = Guid.NewGuid();
@@ -85,5 +85,7 @@ namespace Program
         
         [LoggerIgnore]
         public string Description { get; set; }
+
+        public int Field;
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Reflection;
 
 namespace Superset.Logging
@@ -11,17 +12,19 @@ namespace Superset.Logging
 
         public Fields() { }
 
-        public Fields(object source)
+        public Fields(object? source)
         {
+            if (source == null) return;
+
             Type t = source.GetType();
 
-            foreach (FieldInfo member in t.GetFields(BindingFlags))
-                if (member.GetCustomAttribute(typeof(LoggerIgnore)) == null)
-                    Add(member.Name, member.GetValue(source));
+            foreach (FieldInfo m in t.GetFields(BindingFlags))
+                if (m.GetCustomAttribute(typeof(LoggerIgnore)) == null)
+                    Add(m.Name, m.GetValue(source));
 
-            foreach (PropertyInfo member in t.GetProperties(BindingFlags))
-                if (member.GetCustomAttribute(typeof(LoggerIgnore)) == null)
-                    Add(member.Name, member.GetValue(source));
+            foreach (PropertyInfo m in t.GetProperties(BindingFlags).Where(v => v.GetIndexParameters().Length == 0))
+                if (m.GetCustomAttribute(typeof(LoggerIgnore)) == null)
+                    Add(m.Name, m.GetValue(source));
         }
     }
 
