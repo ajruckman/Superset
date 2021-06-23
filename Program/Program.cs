@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using Superset.Logging;
 using Superset.Web;
 
@@ -9,9 +10,16 @@ namespace Program
     {
         private static void Main()
         {
-            Log.Logger.Info("Test log", new Fields(new LogObjectTest() {ID = 1, Name = "2", Description = "3", Field = 4}));
+            Log.Logger.Info("Test log",
+                new Fields(new LogObjectTest() { ID = 1, Name = "2", Description = "3", Field = 4 }));
 
-            
+            var dict = new OrderedDictionary
+            {
+                { "asdf", 1 }
+            };
+
+            var f = new Fields(dict);
+
             var a = Guid.NewGuid();
             var b = Guid.NewGuid();
 
@@ -24,10 +32,10 @@ namespace Program
             Console.WriteLine(c.GetHashCode());
             Console.WriteLine(d.GetHashCode());
             Console.WriteLine(e.GetHashCode());
-                        Console.WriteLine(c.GetHashCode());
+            Console.WriteLine(c.GetHashCode());
             Console.WriteLine(d.GetHashCode());
             Console.WriteLine(e.GetHashCode());
-            
+
             Hash(a);
             Hash(b);
             Hash(c);
@@ -43,11 +51,10 @@ namespace Program
             s.Add(c);
 
             Console.WriteLine(s.Count);
-            
-            // var x = new ResourceManifests2();
-            var                  scripts     = ResourceSets.Listeners.AllScripts();
-            var stylesheets = ResourceSets.Listeners.AllStylesheets();
 
+            // var x = new ResourceManifests2();
+            var scripts     = ResourceSets.Listeners.AllScripts();
+            var stylesheets = ResourceSets.Listeners.AllStylesheets();
 
             // Logger logger = new Logger(printSourceInfo: true, projectRoot: "Superset", minMetaLeftPadding: 0);
 
@@ -74,15 +81,14 @@ namespace Program
         {
             Console.WriteLine(x.GetHashCode());
         }
-            
     }
 
     internal class LogObjectTest
     {
         public int ID { get; set; }
-        
+
         public string Name { get; set; }
-        
+
         [LoggerIgnore]
         public string Description { get; set; }
 
