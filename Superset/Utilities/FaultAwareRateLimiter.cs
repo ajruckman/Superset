@@ -6,39 +6,116 @@ using System.Runtime.CompilerServices;
 
 namespace Superset.Utilities
 {
+    public interface IFaultableResult { }
+
+    // ReSharper disable once UnusedTypeParameter
+    public interface IFaultableResult<TResult> { }
+
+    public class FaultableResultSuccess<TResult> : IFaultableResult<TResult>
+    {
+        public FaultableResultSuccess(TResult value)
+        {
+            Value = value;
+        }
+
+        public TResult Value { get; }
+    }
+
+    public class FaultableResultSuccess : IFaultableResult { }
+
+    public class FaultableResultFailure : IFaultableResult
+    {
+        public FaultableResultFailure(Exception exception, TimeSpan? minTimeoutSeconds)
+        {
+            Exception         = exception;
+            MinTimeoutSeconds = minTimeoutSeconds;
+        }
+
+        public Exception Exception         { get; }
+        public TimeSpan? MinTimeoutSeconds { get; }
+    }
+
+    public class FaultableResultFailure<TResult> : IFaultableResult<TResult>
+    {
+        public FaultableResultFailure(Exception exception, TimeSpan? minTimeoutSeconds)
+        {
+            Exception         = exception;
+            MinTimeoutSeconds = minTimeoutSeconds;
+        }
+
+        public Exception Exception         { get; }
+        public TimeSpan? MinTimeoutSeconds { get; }
+    }
+
+    // public class FaultableResult<TResult>
+    // {
+    //     private readonly bool _succeeded;
+    //
+    //     private FaultableResult(TResult value)
+    //     {
+    //         _succeeded = true;
+    //         Value      = value;
+    //     }
+    //
+    //     private FaultableResult(Exception e, TimeSpan retryAfter)
+    //     {
+    //         _succeeded = false;
+    //         Exception  = e;
+    //         RetryAfter = retryAfter;
+    //     }
+    //
+    //     public TResult?   Value      { get; }
+    //     public Exception? Exception  { get; }
+    //     public TimeSpan?  RetryAfter { get; }
+    //
+    //     public bool Succeeded([MaybeNullWhen(false)] out TResult value)
+    //     {
+    //         if (_succeeded)
+    //         {
+    //             value = Value!;
+    //             return true;
+    //         }
+    //
+    //         value = default;
+    //         return false;
+    //     }
+    //
+    //     public FaultableResult<TResult> Success(TResult   value)                  => new(value);
+    //     public FaultableResult<TResult> Failure(Exception e, TimeSpan retryAfter) => new(e, retryAfter);
+    // }
+
     public class FaultAwareRateLimiter<TIdentifier>
         where TIdentifier : IEquatable<TIdentifier>
     {
-        private readonly Dictionary<string, Dictionary<TIdentifier, Timeout>> _calls =
-            new Dictionary<string, Dictionary<TIdentifier, Timeout>>();
+        private readonly Dictionary<string, Dictionary<TIdentifier, Timeout>> _calls = new();
 
-        private readonly uint   _baseTimeoutSeconds;
-        private readonly uint   _maxTimeoutSeconds;
-        private readonly double _multiplier;
+        private readonly TimeSpan _baseTimeoutSeconds;
+        private readonly TimeSpan _maxTimeoutSeconds;
+        private readonly double   _multiplier;
+
+        public FaultAwareRateLimiter
+        (
+            TimeSpan? baseTimeoutSeconds = null,
+            TimeSpan? maxTimeoutSeconds  = null,
+            double    multiplier         = 1.25
+        )
+        {
+            _baseTimeoutSeconds = baseTimeoutSeconds ?? TimeSpan.FromSeconds(1);
+            _maxTimeoutSeconds  = maxTimeoutSeconds  ?? TimeSpan.FromSeconds(1800);
+            _multiplier         = multiplier;
+        }
 
         public string DefaultMaxTimeoutNotice =>
             "Reached max possible timeout of FaultAwareRateLimiter for data with unique ID.";
 
-        public FaultAwareRateLimiter
-        (
-            uint   baseTimeoutSeconds = 1,
-            uint   maxTimeoutSeconds  = 1800,
-            double multiplier         = 1.25
-        )
-        {
-            _baseTimeoutSeconds = baseTimeoutSeconds;
-            _maxTimeoutSeconds  = maxTimeoutSeconds;
-            _multiplier         = multiplier;
-        }
-
-        public event Action<(string CallerID, TIdentifier UniqueID, Exception Fault)>? OnMaxTimeoutReached;
+        public event Action<(string CallerID, TIdentifier UniqueID, Exception? Fault)>? OnMaxTimeoutReached;
 
         public void Try
         (
             TIdentifier               uniqueID,
-            Action                    action,
+            Func<IFaultableResult>    action,
             Action                    onSuccess,
-            Action<Exception>         onFailure,
+            Action<Exception?>        onFailure,
             [CallerMemberName] string sourceName = "",
             [CallerFilePath]   string sourceFile = "",
             [CallerLineNumber] int    sourceLine = 0
@@ -46,22 +123,28 @@ namespace Superset.Utilities
         {
             string caller = $"{sourceName}@{sourceFile}:{sourceLine}";
 
-            long now = DateTime.Now.Ticks;
+            DateTime now = DateTime.Now;
 
-            if (GetCall(caller, uniqueID, out Timeout timeout))
+            if (GetCall(caller, uniqueID, out Timeout lastTimeout))
             {
-                if (now >= timeout.Next)
+                if (now >= lastTimeout.Next)
                 {
-                    try
+                    IFaultableResult result = action.Invoke();
+
+                    switch (result)
                     {
-                        action.Invoke();
-                        HandleSuccess(caller, uniqueID);
-                        onSuccess.Invoke();
-                    }
-                    catch (Exception e)
-                    {
-                        HandleFailure(caller, uniqueID, now, timeout, e);
-                        onFailure.Invoke(e);
+                        case FaultableResultSuccess:
+                            HandleSuccess(caller, uniqueID);
+                            onSuccess.Invoke();
+                            break;
+
+                        case FaultableResultFailure failure:
+                            HandleFailure(caller, uniqueID, now, lastTimeout, failure.Exception);
+                            onFailure.Invoke(failure.Exception);
+                            break;
+
+                        default:
+                            throw new ArgumentOutOfRangeException();
                     }
                 }
                 else
@@ -71,50 +154,61 @@ namespace Superset.Utilities
             }
             else
             {
-                try
+                IFaultableResult result = action.Invoke();
+
+                switch (result)
                 {
-                    action.Invoke();
-                    Debug.WriteLine("Initial action called successfully: " + caller);
-                    onSuccess.Invoke();
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine("Initial action failed: " + caller);
-                    AddCall(caller, uniqueID, now, _baseTimeoutSeconds, e.Message);
-                    onFailure.Invoke(e);
+                    case FaultableResultSuccess:
+                        Debug.WriteLine("Initial action called successfully: " + caller);
+                        onSuccess.Invoke();
+                        break;
+
+                    case FaultableResultFailure failure:
+                        Debug.WriteLine("Initial action failed: " + caller);
+                        AddCall(caller, uniqueID, now, failure.MinTimeoutSeconds ?? _baseTimeoutSeconds);
+                        onFailure.Invoke(failure.Exception);
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
         }
 
         public void Try<TResult>
         (
-            TIdentifier               uniqueID,
-            Func<TResult>             action,
-            Action<TResult>           onSuccess,
-            Action<Exception>         onFailure,
-            [CallerMemberName] string sourceName = "",
-            [CallerFilePath]   string sourceFile = "",
-            [CallerLineNumber] int    sourceLine = 0
+            TIdentifier                     uniqueID,
+            Func<IFaultableResult<TResult>> action,
+            Action<TResult>                 onSuccess,
+            Action<Exception?>              onFailure,
+            [CallerMemberName] string       sourceName = "",
+            [CallerFilePath]   string       sourceFile = "",
+            [CallerLineNumber] int          sourceLine = 0
         )
         {
-            string caller = $"{sourceName}@{sourceFile}:{sourceLine}";
+            string   caller = $"{sourceName}@{sourceFile}:{sourceLine}";
+            DateTime now    = DateTime.Now;
 
-            long now = DateTime.Now.Ticks;
-
-            if (GetCall(caller, uniqueID, out Timeout timeout))
+            if (GetCall(caller, uniqueID, out Timeout lastTimeout))
             {
-                if (now >= timeout.Next)
+                if (now >= lastTimeout.Next)
                 {
-                    try
+                    IFaultableResult<TResult> result = action.Invoke();
+
+                    switch (result)
                     {
-                        TResult result = action.Invoke();
-                        HandleSuccess(caller, uniqueID);
-                        onSuccess.Invoke(result);
-                    }
-                    catch (Exception e)
-                    {
-                        HandleFailure(caller, uniqueID, now, timeout, e);
-                        onFailure.Invoke(e);
+                        case FaultableResultSuccess<TResult> success:
+                            HandleSuccess(caller, uniqueID);
+                            onSuccess.Invoke(success.Value);
+                            break;
+
+                        case FaultableResultFailure<TResult> failure:
+                            HandleFailure(caller, uniqueID, now, lastTimeout, failure.Exception);
+                            onFailure.Invoke(failure.Exception);
+                            break;
+
+                        default:
+                            throw new ArgumentOutOfRangeException();
                     }
                 }
                 else
@@ -124,51 +218,59 @@ namespace Superset.Utilities
             }
             else
             {
-                try
+                IFaultableResult<TResult> result = action.Invoke();
+
+                switch (result)
                 {
-                    TResult result = action.Invoke();
-                    Debug.WriteLine("Initial action called successfully: " + caller);
-                    onSuccess.Invoke(result);
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine("Initial action failed: " + caller);
-                    AddCall(caller, uniqueID, now, _baseTimeoutSeconds, e.Message);
-                    onFailure.Invoke(e);
+                    case FaultableResultSuccess<TResult> success:
+                        Debug.WriteLine("Initial action called successfully: " + caller);
+                        onSuccess.Invoke(success.Value);
+                        break;
+
+                    case FaultableResultFailure<TResult> failure:
+                        Debug.WriteLine("Initial action failed: " + caller);
+                        AddCall(caller, uniqueID, now, failure.MinTimeoutSeconds ?? _baseTimeoutSeconds);
+                        onFailure.Invoke(failure.Exception);
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
         }
 
         public TOutput Try<TResult, TOutput>
-            (
-                TIdentifier               uniqueID,
-                Func<TResult>             action,
-                Func<TResult, TOutput>    onSuccess,
-                Func<Exception, TOutput>  onFailure,
-                [CallerMemberName] string sourceName = "",
-                [CallerFilePath]   string sourceFile = "",
-                [CallerLineNumber] int    sourceLine = 0
-            )
-            // where TOutput : struct
+        (
+            TIdentifier                     uniqueID,
+            Func<IFaultableResult<TResult>> action,
+            Func<TResult, TOutput>          onSuccess,
+            Func<Exception?, TOutput>       onFailure,
+            [CallerMemberName] string       sourceName = "",
+            [CallerFilePath]   string       sourceFile = "",
+            [CallerLineNumber] int          sourceLine = 0
+        )
         {
-            string caller = $"{sourceName}@{sourceFile}:{sourceLine}";
-
-            long now = DateTime.Now.Ticks;
+            string   caller = $"{sourceName}@{sourceFile}:{sourceLine}";
+            DateTime now    = DateTime.Now;
 
             if (GetCall(caller, uniqueID, out Timeout timeout))
             {
                 if (now >= timeout.Next)
                 {
-                    try
+                    IFaultableResult<TResult> result = action.Invoke();
+
+                    switch (result)
                     {
-                        TResult result = action.Invoke();
-                        HandleSuccess(caller, uniqueID);
-                        return onSuccess.Invoke(result);
-                    }
-                    catch (Exception e)
-                    {
-                        HandleFailure(caller, uniqueID, now, timeout, e);
-                        return onFailure.Invoke(e);
+                        case FaultableResultSuccess<TResult> success:
+                            HandleSuccess(caller, uniqueID);
+                            return onSuccess.Invoke(success.Value);
+
+                        case FaultableResultFailure<TResult> failure:
+                            HandleFailure(caller, uniqueID, now, timeout, failure.Exception);
+                            return onFailure.Invoke(failure.Exception);
+
+                        default:
+                            throw new ArgumentOutOfRangeException();
                     }
                 }
                 else
@@ -179,54 +281,49 @@ namespace Superset.Utilities
             }
             else
             {
-                try
+                IFaultableResult<TResult> result = action.Invoke();
+                switch (result)
                 {
-                    TResult result = action.Invoke();
-                    Debug.WriteLine("Initial action called successfully: " + caller);
-                    return onSuccess.Invoke(result);
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine("Initial action failed: " + caller);
-                    AddCall(caller, uniqueID, now, _baseTimeoutSeconds, e.Message);
-                    return onFailure.Invoke(e);
+                    case FaultableResultSuccess<TResult> success:
+                        Debug.WriteLine("Initial action called successfully: " + caller);
+                        return onSuccess.Invoke(success.Value);
+
+                    case FaultableResultFailure<TResult> failure:
+                        Debug.WriteLine("Initial action failed: " + caller);
+                        AddCall(caller, uniqueID, now, failure.MinTimeoutSeconds ?? _baseTimeoutSeconds);
+
+                        return onFailure.Invoke(failure.Exception);
+
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
         }
 
-        private uint GetTimeoutSeconds
+        private TimeSpan GetNextTimeout
         (
             string      caller,
             TIdentifier uniqueID,
-            Timeout     t,
-            Exception   e
+            Timeout     timeout,
+            Exception?  e
         )
         {
-            var seconds = (uint) (t.Seconds * _multiplier);
+            TimeSpan duration = timeout.Duration * _multiplier;
 
-            if (seconds > _maxTimeoutSeconds)
+            if (duration > _maxTimeoutSeconds)
             {
                 OnMaxTimeoutReached?.Invoke((caller, uniqueID, e));
-                // Common.Logger.Error
-                // (
-                //     "ExceptionRateLimiter call hit the timeout ceiling for an exception.",
-                //     meta: new Fields
-                //     {
-                //         {"UniqueID", uniqueID},
-                //         {"ID", id},
-                //         {"Message", m},
-                //     }
-                // );
-                seconds = _maxTimeoutSeconds;
+                duration = _maxTimeoutSeconds;
             }
-            else if (seconds == t.Seconds)
+            else if (duration == timeout.Duration)
             {
-                seconds += 1;
+                duration += TimeSpan.FromSeconds(1);
             }
 
-            return seconds;
+            return duration;
         }
 
+        // ReSharper disable once RedundantNullableFlowAttribute
         private bool GetCall(string caller, TIdentifier uniqueID, [MaybeNullWhen(false)] out Timeout t)
         {
             if (_calls.TryGetValue(caller, out Dictionary<TIdentifier, Timeout>? timeouts))
@@ -242,7 +339,7 @@ namespace Superset.Utilities
             return false;
         }
 
-        private void AddCall(string caller, TIdentifier uniqueID, long now, uint seconds, string m)
+        private void AddCall(string caller, TIdentifier uniqueID, DateTime now, TimeSpan timeout)
         {
             if (!_calls.TryGetValue(caller, out Dictionary<TIdentifier, Timeout>? timeouts))
             {
@@ -252,9 +349,8 @@ namespace Superset.Utilities
 
             timeouts[uniqueID] = new Timeout
             (
-                seconds,
-                now + (TimeSpan.TicksPerSecond * seconds),
-                m
+                timeout,
+                now + timeout
             );
         }
 
@@ -281,37 +377,28 @@ namespace Superset.Utilities
         (
             string      caller,
             TIdentifier uniqueID,
-            long        now,
-            Timeout     t,
-            Exception   e
+            DateTime    now,
+            Timeout     lastTimeout,
+            Exception?  e
         )
         {
             Debug.WriteLine($"Action failed: {caller} for {uniqueID}");
 
-            if (t.Exception == e.Message)
-            {
-                uint seconds = GetTimeoutSeconds(caller, uniqueID, t, e);
-                Debug.WriteLine($"New timeout: {seconds}");
+            TimeSpan seconds = GetNextTimeout(caller, uniqueID, lastTimeout, e);
+            Debug.WriteLine($"New timeout: {seconds}");
 
-                AddCall(caller, uniqueID, now, seconds, e.Message);
-            }
-            else
-            {
-                AddCall(caller, uniqueID, now, _baseTimeoutSeconds, e.Message);
-            }
+            AddCall(caller, uniqueID, now, seconds);
         }
 
         private readonly struct Timeout
         {
-            internal readonly uint   Seconds;
-            internal readonly long   Next;
-            internal readonly string Exception;
+            internal readonly TimeSpan Duration;
+            internal readonly DateTime Next;
 
-            public Timeout(uint seconds, long next, string exception)
+            public Timeout(TimeSpan duration, DateTime next)
             {
-                Seconds   = seconds;
-                Next      = next;
-                Exception = exception;
+                Duration = duration;
+                Next     = next;
             }
         }
     }
